@@ -5,6 +5,7 @@
 #
 
 NAME := hello
-LOCAL_SRCS := main.c
+LOCAL_SRCS := memtest.c
+
 
 include $(binary.mk)
