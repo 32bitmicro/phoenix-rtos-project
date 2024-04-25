@@ -43,7 +43,7 @@ b_mkscript_user() {
 	done
 
 	local RELATIVE_ALIAS=""
-	if [ -n "${NAME_USER2_SCRIPT}" ] && [ -n "${BANK2_BASE}" ]; then
+	if [ -n "${NAME_USER2_SCRIPT:-}" ] && [ -n "${BANK2_BASE:-}" ]; then
 		RELATIVE_ALIAS=" -r"
 	fi
 
@@ -98,8 +98,8 @@ b_mkscript_user() {
 # Optional variables used for remote firmware upgrade:
 # - NAME_USER2_SCRIPT - name of the secondary user script
 # - OFFS_USER2_SCRIPT - offset of the secondary user script
-# - BANKSWITCH - indicates if bankswitch command should be emitted
-# - BANK2_BASE - address of secondary firmware image
+# - BANKSWITCH - indicates if bankswitch command should be emitted (optional)
+# - BANK2_BASE - address of secondary firmware image (optional)
 b_mkscript_preinit() {
 	mkdir -p "$PLO_SCRIPT_DIR"
 
@@ -120,13 +120,13 @@ b_mkscript_preinit() {
 
 		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
 		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
-		if [ -n "${BANKSWITCH}" ]; then
+		if [ -n "${BANKSWITCH:-}" ]; then
 			printf "bankswitch\n"
 		fi
 
 		local RELATIVE_ALIAS=""
-		if [ -n "${NAME_USER2_SCRIPT}" ]; then
-			if [ -n "${BANK2_BASE}" ]; then
+		if [ -n "${NAME_USER2_SCRIPT:-}" ]; then
+			if [ -n "${BANK2_BASE:-}" ]; then
 				printf "alias -b 0x%x\n" "$BANK2_BASE"
 				RELATIVE_ALIAS=" -r"
 			fi
@@ -145,7 +145,7 @@ b_mkscript_preinit() {
 b_pad()
 {
 	if [ "$2" -ne 0 ]; then
-		if [ "$IMAGE_PAD_FF" = 'y' ]; then
+		if [ "${IMAGE_PAD_FF:-}" = 'y' ]; then
 			dd if=/dev/zero bs="$2" count=1 2>/dev/null | tr "\000" "\377" > padding.img
 			dd if="$1" of=padding.img conv=notrunc 2>/dev/null
 			mv padding.img "$1"
@@ -166,7 +166,7 @@ b_add2img() {
 	: "${SIZE_PAGE:?variable unset}"
 	: "${PAGE_MASK:?variable unset}"
 
-	if [ "$IMAGE_PAD_FF" = "y" ]; then
+	if [ "${IMAGE_PAD_FF:-}" = "y" ]; then
 		dd_pad_str=", pad=0xff"
 	else
 		dd_pad_str=""
